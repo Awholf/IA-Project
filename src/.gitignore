@@ -1,0 +1,23 @@
+# Ignorar entorno virtual
+env/
+
+# Archivos de Python compilados
+__pycache__/
+*.py[cod]
+
+# Archivos de Jupyter
+.ipynb_checkpoints/
+
+# Archivos temporales de VS Code
+.vscode/
+*.code-workspace
+
+# Datos sensibles o temporales
+.env
+*.log
+*.sqlite3
+*.db
+
+# Archivos del sistema
+.DS_Store
+Thumbs.db
