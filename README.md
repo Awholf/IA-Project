@@ -10,7 +10,7 @@ Sigue estos pasos para configurar el proyecto en tu máquina local:
 2. **Crea un Entorno Virtual**
    ```bash
    python -m venv env
-   source venv/bin/activate  # En Windows usa `venv\Scripts\activate`
+   source env/bin/activate  # En Windows usa `venv\Scripts\activate`
 3. **Instala Dependencias**
    ```bash
    pip install -r requirements.txt
