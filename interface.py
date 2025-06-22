@@ -381,7 +381,7 @@ INFORMACIÓN ADICIONAL:
         notebook.add(graphics_frame, text="📊 Análisis Gráfico")
 
         try:
-            fig = self.classifier.generate_analysis_plots(self.df_trained, self.X_test, self.y_test, self.y_pred)
+            fig = self.classifier.generate_analysis_plots(self.y_test, self.y_pred)
             canvas = FigureCanvasTkAgg(fig, master=graphics_frame)
             canvas.draw()
             canvas_frame = ttk.Frame(graphics_frame)

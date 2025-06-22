@@ -274,97 +274,85 @@ class NewsTopicClassifier:
         except Exception as e:
             return f"Error durante la clasificación: {str(e)}", {}
 
-    def generate_analysis_plots(self, df, X_test, y_test, y_pred):
-        """
-        Genera gráficos de análisis para evaluar el dataset y el modelo.
+    def generate_analysis_plots(self, y_test, y_pred):
+        # Calcular la matriz de confusión
+        cm = confusion_matrix(y_test, y_pred)
+        categories = sorted(set(y_test))
 
-        Args:
-            df: DataFrame con columnas 'texto', 'categoria'
-            X_test: Datos de prueba
-            y_test: Etiquetas reales
-            y_pred: Etiquetas predichas
-        Returns:
-            Figura de matplotlib con múltiples subplots
-        """
-        fig = Figure(figsize=(12, 8))
+        # Calcular métricas por categoría
+        metrics = {}
+        for i, category in enumerate(categories):
+            TP = cm[i, i]
+            FP = cm[:, i].sum() - TP
+            FN = cm[i, :].sum() - TP
+            TN = cm.sum() - (TP + FP + FN)
+            
+            precision = TP / (TP + FP) if (TP + FP) > 0 else 0
+            recall = TP / (TP + FN) if (TP + FN) > 0 else 0
+            specificity = TN / (TN + FP) if (TN + FP) > 0 else 0
+            ppv = precision  # Valor predictivo positivo
+            npv = TN / (TN + FN) if (TN + FN) > 0 else 0  # Valor predictivo negativo
+            jaccard = TP / (TP + FP + FN) if (TP + FP + FN) > 0 else 0
+            
+            metrics[category] = {
+                'precision': precision,
+                'recall': recall,
+                'specificity': specificity,
+                'ppv': ppv,
+                'npv': npv,
+                'jaccard': jaccard
+            }
 
-        ax1 = fig.add_subplot(231)
-        category_counts = df['categoria'].value_counts().head(15)
-        bars = ax1.bar(range(len(category_counts)), category_counts.values, color='skyblue', alpha=0.8)
-        ax1.set_title('Distribución de Categorías', fontsize=10, fontweight='bold', pad=10)
-        ax1.set_xlabel('Categorías', fontsize=8)
-        ax1.set_ylabel('Documentos', fontsize=8)
-        ax1.set_xticks(range(len(category_counts)))
-        ax1.set_xticklabels([cat[:15] + '...' if len(cat) > 15 else cat for cat in category_counts.index], rotation=45, ha='right', fontsize=6)
-        for bar in bars:
-            ax1.text(bar.get_x() + bar.get_width()/2., bar.get_height() + 0.5, f'{int(bar.get_height())}', ha='center', fontsize=6)
+        # Calcular exactitud global
+        accuracy = accuracy_score(y_test, y_pred)
 
-        ax2 = fig.add_subplot(232)
-        df['longitud'] = df['texto'].str.len()
-        ax2.hist(df['longitud'], bins=40, color='lightgreen', alpha=0.7)
-        ax2.set_title('Longitud de Documentos', fontsize=10, fontweight='bold', pad=10)
-        ax2.set_xlabel('Caracteres', fontsize=10)
-        ax2.set_ylabel('Frecuencia', fontsize=8)
-        ax2.axvline(df['longitud'].mean(), color='red', linestyle='--', label=f'Media: {df['longitud'].mean():.0f}')
-        ax2.legend(fontsize=6)
-        ax2.grid(True, alpha=0.3)
+        # Seleccionar top 10 categorías por precisión (puedes ajustar el criterio)
+        top_categories = sorted(metrics.keys(), key=lambda x: metrics[x]['precision'], reverse=True)[:10]
 
-        ax3 = fig.add_subplot(233)
-        df['palabras'] = df['texto'].str.split().str.len()
-        ax3.hist(df['palabras'], bins=40, color='orange', alpha=0.7)
-        ax3.set_title('Número de Palabras', fontsize=10, fontweight='bold', pad=10)
-        ax3.set_xlabel('Palabras', fontsize=8)
-        ax3.set_ylabel('Frecuencia', fontsize=8)
-        ax3.axvline(df['palabras'].mean(), color='red', linestyle='--', label=f'Media: {df['palabras'].mean():.0f}')
-        ax3.legend(fontsize=6)
-        ax3.grid(True, alpha=0.3)
+        # Crear la figura con 6 subplots
+        fig, axes = plt.subplots(2, 3, figsize=(18, 10))
+        axes = axes.ravel()
 
-        ax4 = fig.add_subplot(234)
-        top_categories = [cat[0] for cat in Counter(y_test).most_common(10)]
-        mask = pd.Series(y_test).isin(top_categories) & pd.Series(y_pred).isin(top_categories)
-        y_test_filtered = pd.Series(y_test)[mask]
-        y_pred_filtered = pd.Series(y_pred)[mask]
+        # Subplot 1: Matriz de confusión
+        axes[0].imshow(cm, interpolation='nearest', cmap=plt.cm.Blues)
+        axes[0].set_title('Matriz de Confusión')
+        axes[0].set_xlabel('Predicho')
+        axes[0].set_ylabel('Real')
 
-        if len(y_test_filtered) > 0:
-            cm = confusion_matrix(y_test_filtered, y_pred_filtered, labels=top_categories)
-            sns.heatmap(cm, annot=True, fmt='d', cmap='Blues', ax=ax4,
-                       xticklabels=[cat[:10] + '...' if len(cat) > 10 else cat for cat in top_categories],
-                       yticklabels=[cat[:10] + '...' if len(cat) > 10 else cat for cat in top_categories])
-            ax4.set_title('Matriz de Confusión (Top 10)', fontsize=10, fontweight='bold', pad=10)
-            ax4.set_xlabel('Predicción', fontsize=8)
-            ax4.set_ylabel('Real', fontsize=8)
-            ax4.tick_params(axis='x', rotation=45, labelsize=6)
-            ax4.tick_params(axis='y', labelsize=6)
+        # Subplot 2: Exactitud (Accuracy)
+        axes[1].bar(['Exactitud'], [accuracy], color='skyblue')
+        axes[1].set_ylim(0, 1)
+        axes[1].set_title('Exactitud Global')
+        axes[1].text(0, accuracy + 0.02, f'{accuracy:.2f}', ha='center')
 
-        ax5 = fig.add_subplot(235)
-        try:
-            report_dict = classification_report(y_test, y_pred, output_dict=True, zero_division=0)
-            categories_precision = [(cat, report_dict[cat]['precision'])
-                                  for cat in report_dict if cat not in ['accuracy', 'macro avg', 'weighted avg']]
-            categories_precision = sorted(categories_precision, key=lambda x: x[1], reverse=True)[:10]
-            cats, precisions = zip(*categories_precision)
-            bars = ax5.barh(range(len(cats)), precisions, color='coral', alpha=0.8)
-            ax5.set_title('Precisión por Categoría (Top 10)', fontsize=10, fontweight='bold', pad=10)
-            ax5.set_xlabel('Precisión', fontsize=8)
-            ax5.set_ylabel('Categorías', fontsize=8)
-            ax5.set_yticks(range(len(cats)))
-            ax5.set_yticklabels([cat[:15] + '...' if len(cat) > 15 else cat for cat in cats], fontsize=6)
-            ax5.set_xlim(0, 1)
-            for i, bar in enumerate(bars):
-                ax5.text(bar.get_width() + 0.01, bar.get_y() + bar.get_height()/2., f'{bar.get_width():.2f}', va='center', fontsize=6)
-        except:
-            ax5.text(0.5, 0.5, 'Error generando gráfica', ha='center', va='center')
+        # Subplot 3: Precisión (Precision)
+        precisions = [metrics[cat]['precision'] for cat in top_categories]
+        axes[2].barh(top_categories, precisions, color='lightgreen')
+        axes[2].set_xlim(0, 1)
+        axes[2].set_title('Precisión (Top 10 Categorías)')
 
-        ax6 = fig.add_subplot(236)
-        avg_length = df.groupby('categoria')['longitud'].mean().sort_values(ascending=False).head(10)
-        bars = ax6.barh(range(len(avg_length)), avg_length.values, color='mediumpurple', alpha=0.8)
-        ax6.set_title('Longitud Promedio por Categoría', fontsize=10, fontweight='bold', pad=10)
-        ax6.set_xlabel('Caracteres Promedio', fontsize=8)
-        ax6.set_ylabel('Categorías', fontsize=8)
-        ax6.set_yticks(range(len(avg_length)))
-        ax6.set_yticklabels([cat[:15] + '...' if len(cat) > 15 else cat for cat in avg_length.index], fontsize=6)
-        for i, bar in enumerate(bars):
-            ax6.text(bar.get_width() + 10, bar.get_y() + bar.get_height()/2., f'{bar.get_width():.0f}', va='center', fontsize=6)
+        # Subplot 4: Sensibilidad (Recall)
+        recalls = [metrics[cat]['recall'] for cat in top_categories]
+        axes[3].barh(top_categories, recalls, color='salmon')
+        axes[3].set_xlim(0, 1)
+        axes[3].set_title('Sensibilidad (Top 10 Categorías)')
 
-        fig.tight_layout(pad=2.0)
+        # Subplot 5: Especificidad (Specificity)
+        specificities = [metrics[cat]['specificity'] for cat in top_categories]
+        axes[4].barh(top_categories, specificities, color='lightblue')
+        axes[4].set_xlim(0, 1)
+        axes[4].set_title('Especificidad (Top 10 Categorías)')
+
+        # Subplot 6: Valores Predictivos y Medida de Jaccard combinados
+        jaccards = [metrics[cat]['jaccard'] for cat in top_categories]
+        npvs = [metrics[cat]['npv'] for cat in top_categories]
+        axes[5].barh([f'{cat} (Jaccard)' for cat in top_categories], jaccards, color='orchid', label='Jaccard')
+        axes[5].barh([f'{cat} (VPN)' for cat in top_categories], npvs, color='plum', alpha=0.6, label='VPN')
+        axes[5].set_xlim(0, 1)
+        axes[5].set_title('Valores Predictivos y Jaccard (Top 10)')
+        axes[5].legend()
+
+        # Ajustar el diseño
+        plt.tight_layout()
         return fig
+    
