@@ -289,16 +289,12 @@ class NewsTopicClassifier:
             
             precision = TP / (TP + FP) if (TP + FP) > 0 else 0
             recall = TP / (TP + FN) if (TP + FN) > 0 else 0
-            specificity = TN / (TN + FP) if (TN + FP) > 0 else 0
-            ppv = precision  # Valor predictivo positivo
             npv = TN / (TN + FN) if (TN + FN) > 0 else 0  # Valor predictivo negativo
             jaccard = TP / (TP + FP + FN) if (TP + FP + FN) > 0 else 0
             
             metrics[category] = {
                 'precision': precision,
                 'recall': recall,
-                'specificity': specificity,
-                'ppv': ppv,
                 'npv': npv,
                 'jaccard': jaccard
             }
@@ -306,10 +302,10 @@ class NewsTopicClassifier:
         # Calcular exactitud global
         accuracy = accuracy_score(y_test, y_pred)
 
-        # Seleccionar top 10 categorías por precisión (puedes ajustar el criterio)
+        # Seleccionar top 10 categorías por precisión
         top_categories = sorted(metrics.keys(), key=lambda x: metrics[x]['precision'], reverse=True)[:10]
 
-        # Crear la figura con 6 subplots
+        # Crear la figura con 6 subplots (2 filas, 3 columnas)
         fig, axes = plt.subplots(2, 3, figsize=(18, 10))
         axes = axes.ravel()
 
@@ -325,34 +321,32 @@ class NewsTopicClassifier:
         axes[1].set_title('Exactitud Global')
         axes[1].text(0, accuracy + 0.02, f'{accuracy:.2f}', ha='center')
 
-        # Subplot 3: Precisión (Precision)
+        # Subplot 3: Precisión (Precision, igual a VPP)
         precisions = [metrics[cat]['precision'] for cat in top_categories]
         axes[2].barh(top_categories, precisions, color='lightgreen')
         axes[2].set_xlim(0, 1)
-        axes[2].set_title('Precisión (Top 10 Categorías)')
+        axes[2].set_title('Precisión (VPP) - Top 10 Categorías')
 
         # Subplot 4: Sensibilidad (Recall)
         recalls = [metrics[cat]['recall'] for cat in top_categories]
         axes[3].barh(top_categories, recalls, color='salmon')
         axes[3].set_xlim(0, 1)
-        axes[3].set_title('Sensibilidad (Top 10 Categorías)')
+        axes[3].set_title('Sensibilidad - Top 10 Categorías')
 
-        # Subplot 5: Especificidad (Specificity)
-        specificities = [metrics[cat]['specificity'] for cat in top_categories]
-        axes[4].barh(top_categories, specificities, color='lightblue')
-        axes[4].set_xlim(0, 1)
-        axes[4].set_title('Especificidad (Top 10 Categorías)')
-
-        # Subplot 6: Valores Predictivos y Medida de Jaccard combinados
-        jaccards = [metrics[cat]['jaccard'] for cat in top_categories]
+        # Subplot 5: Valores Predictivos Negativos (VPN)
         npvs = [metrics[cat]['npv'] for cat in top_categories]
-        axes[5].barh([f'{cat} (Jaccard)' for cat in top_categories], jaccards, color='orchid', label='Jaccard')
-        axes[5].barh([f'{cat} (VPN)' for cat in top_categories], npvs, color='plum', alpha=0.6, label='VPN')
+        axes[4].barh(top_categories, npvs, color='lightblue')
+        axes[4].set_xlim(0, 1)
+        axes[4].set_title('VPN - Top 10 Categorías')
+
+        # Subplot 6: Medida de Jaccard
+        jaccards = [metrics[cat]['jaccard'] for cat in top_categories]
+        axes[5].barh(top_categories, jaccards, color='orchid')
         axes[5].set_xlim(0, 1)
-        axes[5].set_title('Valores Predictivos y Jaccard (Top 10)')
-        axes[5].legend()
+        axes[5].set_title('Medida de Jaccard - Top 10 Categorías')
 
         # Ajustar el diseño
         plt.tight_layout()
         return fig
+
     
