@@ -280,7 +280,7 @@ class NewsClassifierInterface:
 
         messagebox.showinfo("Éxito",
                            f"¡Modelo entrenado exitosamente!\n\n"
-                           f"Precisión: {self.accuracy:.2%}\n"
+                           f"Exactitud: {self.accuracy:.2%}\n"
                            f"Ya puede clasificar textos.")
 
     def training_error(self, error_msg):
