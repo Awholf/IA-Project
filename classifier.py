@@ -231,9 +231,9 @@ class NewsTopicClassifier:
 
         self.pipeline = Pipeline([
             ('tfidf', TfidfVectorizer(
-                max_features=5000, ngram_range=(1, 2), min_df=2, max_df=0.95, stop_words='english', strip_accents='ascii'
+                max_features=20000, ngram_range=(1, 1), min_df=1, max_df=1.0, stop_words='english', strip_accents='ascii'
             )),
-            ('nb', MultinomialNB(alpha=0.1))
+            ('nb', MultinomialNB(alpha=1.0))
         ])
 
         print("🔄 Entrenando modelo Naive Bayes...")
@@ -290,13 +290,13 @@ class NewsTopicClassifier:
             precision = TP / (TP + FP) if (TP + FP) > 0 else 0
             recall = TP / (TP + FN) if (TP + FN) > 0 else 0
             npv = TN / (TN + FN) if (TN + FN) > 0 else 0  # Valor predictivo negativo
-            jaccard = TP / (TP + FP + FN) if (TP + FP + FN) > 0 else 0
+            specificity = TN / (TN + FP) if (TN + FP) > 0 else 0  # Especificidad
             
             metrics[category] = {
                 'precision': precision,
                 'recall': recall,
                 'npv': npv,
-                'jaccard': jaccard
+                'specificity': specificity
             }
 
         # Calcular exactitud global
@@ -340,14 +340,12 @@ class NewsTopicClassifier:
         axes[4].set_xlim(0, 1)
         axes[4].set_title('VPN')
 
-        # Subplot 6: Medida de Jaccard
-        jaccards = [metrics[cat]['jaccard'] for cat in all_categories]
-        axes[5].barh(all_categories, jaccards, color='orchid')
+        # Subplot 6: Especificidad (Reemplazando Medida de Jaccard)
+        specificities = [metrics[cat]['specificity'] for cat in all_categories]
+        axes[5].barh(all_categories, specificities, color='orchid')
         axes[5].set_xlim(0, 1)
-        axes[5].set_title('Medida de Jaccard')
+        axes[5].set_title('Especificidad')
 
         # Ajustar el diseño
         plt.tight_layout()
         return fig
-
-    
