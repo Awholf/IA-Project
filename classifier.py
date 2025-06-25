@@ -319,7 +319,7 @@ class NewsTopicClassifier:
         # Subplot 2: Exactitud (Accuracy)
         axes[1].bar(['Exactitud'], [accuracy], color='skyblue')
         axes[1].set_ylim(0, 1)
-        axes[1].set_title('Exactitud Global')
+        axes[1].set_title('Exactitud')
         axes[1].text(0, accuracy + 0.02, f'{accuracy:.2f}', ha='center')
 
         # Subplot 3: Precisión (Precision, igual a VPP)
