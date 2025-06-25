@@ -104,7 +104,7 @@ class NewsClassifierInterface:
             "💡 Consejos:\n"
             "• Funciona mejor con textos en inglés\n"
             "• Temas: tecnología, deportes, política, ciencia, religión, etc.\n"
-            "• Mínimo 20 caracteres para mejor precisión"
+            "• Mínimo 20 caracteres para mejor exactitud"
         )
         self.text_input.insert('1.0', placeholder_text)
         self.text_input.bind('<FocusIn>', self.clear_placeholder)
@@ -274,7 +274,7 @@ class NewsClassifierInterface:
         Acciones al completar el entrenamiento del modelo.
         """
         self.model_trained = True
-        self.status_var.set(f"Modelo entrenado ✅ - Precisión: {self.accuracy:.1%}")
+        self.status_var.set(f"Modelo entrenado ✅ - Exactitud: {self.accuracy:.1%}")
         self.train_btn.config(state='normal', text="🔄 Re-entrenar Modelo")
         self.classify_btn.config(state='normal')
 
@@ -361,7 +361,7 @@ Algoritmo: Multinomial Naive Bayes
 Dataset: 20 Newsgroups
 Fecha de entrenamiento: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}
 
-PRECISIÓN GENERAL: {accuracy:.2%}
+EXACTITUD GENERAL: {accuracy:.2%}
 
 REPORTE DETALLADO DE CLASIFICACIÓN:
 {report}

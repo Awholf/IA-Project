@@ -242,7 +242,7 @@ class NewsTopicClassifier:
         accuracy = accuracy_score(y_test, y_pred)
 
         print(f"✅ Modelo entrenado exitosamente!")
-        print(f"📊 Precisión del modelo: {accuracy:.2%}")
+        print(f"📊 Exactitud del modelo: {accuracy:.2%}")
 
         self.categories = sorted(list(df['categoria'].unique()))
         return X_test, y_test, y_pred, accuracy
