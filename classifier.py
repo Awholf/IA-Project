@@ -302,15 +302,16 @@ class NewsTopicClassifier:
         # Calcular exactitud global
         accuracy = accuracy_score(y_test, y_pred)
 
-        # Seleccionar top 10 categorías por precisión
-        top_categories = sorted(metrics.keys(), key=lambda x: metrics[x]['precision'], reverse=True)[:10]
+        # Usar todas las categorías
+        all_categories = list(metrics.keys())
 
         # Crear la figura con 6 subplots (2 filas, 3 columnas)
         fig, axes = plt.subplots(2, 3, figsize=(18, 10))
         axes = axes.ravel()
 
-        # Subplot 1: Matriz de confusión
-        axes[0].imshow(cm, interpolation='nearest', cmap=plt.cm.Blues)
+        # Subplot 1: Matriz de confusión con seaborn
+        sns.heatmap(cm, annot=True, fmt='d', cmap='Blues', ax=axes[0],
+                    xticklabels=categories, yticklabels=categories)
         axes[0].set_title('Matriz de Confusión')
         axes[0].set_xlabel('Predicho')
         axes[0].set_ylabel('Real')
@@ -322,28 +323,28 @@ class NewsTopicClassifier:
         axes[1].text(0, accuracy + 0.02, f'{accuracy:.2f}', ha='center')
 
         # Subplot 3: Precisión (Precision, igual a VPP)
-        precisions = [metrics[cat]['precision'] for cat in top_categories]
-        axes[2].barh(top_categories, precisions, color='lightgreen')
+        precisions = [metrics[cat]['precision'] for cat in all_categories]
+        axes[2].barh(all_categories, precisions, color='lightgreen')
         axes[2].set_xlim(0, 1)
-        axes[2].set_title('Precisión (VPP) - Top 10 Categorías')
+        axes[2].set_title('Precisión (VPP)')
 
         # Subplot 4: Sensibilidad (Recall)
-        recalls = [metrics[cat]['recall'] for cat in top_categories]
-        axes[3].barh(top_categories, recalls, color='salmon')
+        recalls = [metrics[cat]['recall'] for cat in all_categories]
+        axes[3].barh(all_categories, recalls, color='salmon')
         axes[3].set_xlim(0, 1)
-        axes[3].set_title('Sensibilidad - Top 10 Categorías')
+        axes[3].set_title('Sensibilidad')
 
         # Subplot 5: Valores Predictivos Negativos (VPN)
-        npvs = [metrics[cat]['npv'] for cat in top_categories]
-        axes[4].barh(top_categories, npvs, color='lightblue')
+        npvs = [metrics[cat]['npv'] for cat in all_categories]
+        axes[4].barh(all_categories, npvs, color='lightblue')
         axes[4].set_xlim(0, 1)
-        axes[4].set_title('VPN - Top 10 Categorías')
+        axes[4].set_title('VPN')
 
         # Subplot 6: Medida de Jaccard
-        jaccards = [metrics[cat]['jaccard'] for cat in top_categories]
-        axes[5].barh(top_categories, jaccards, color='orchid')
+        jaccards = [metrics[cat]['jaccard'] for cat in all_categories]
+        axes[5].barh(all_categories, jaccards, color='orchid')
         axes[5].set_xlim(0, 1)
-        axes[5].set_title('Medida de Jaccard - Top 10 Categorías')
+        axes[5].set_title('Medida de Jaccard')
 
         # Ajustar el diseño
         plt.tight_layout()
