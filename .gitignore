@@ -2,7 +2,7 @@
 env/
 
 # Archivos de Python compilados
-__pycache__/
+codigo/__pycache__/
 *.py[cod]
 
 # Archivos de Jupyter
