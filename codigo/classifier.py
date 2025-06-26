@@ -231,9 +231,9 @@ class NewsTopicClassifier:
 
         self.pipeline = Pipeline([
             ('tfidf', TfidfVectorizer(
-                max_features=20000, ngram_range=(1, 2), min_df=1, max_df=1.0, stop_words='english', strip_accents='ascii'
+                max_features=50000, ngram_range=(1, 2), min_df=2, max_df=1.0, stop_words='english', strip_accents='ascii'
             )),
-            ('nb', MultinomialNB(alpha=1.0))
+            ('nb', MultinomialNB(alpha=0.1))
         ])
 
         print("🔄 Entrenando modelo Naive Bayes...")

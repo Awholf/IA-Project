@@ -143,7 +143,7 @@ class NewsClassifierInterface:
         self.results_tree.heading('Posición', text='#')
         self.results_tree.heading('Categoría', text='Categoría')
         self.results_tree.heading('Probabilidad', text='Probabilidad')
-        self.results_tree.heading('Barra', text='Confianza')
+        self.results_tree.heading('Barra', text='Grafica de carga')
         self.results_tree.column('Posición', width=50, anchor='center')
         self.results_tree.column('Categoría', width=200)
         self.results_tree.column('Probabilidad', width=100, anchor='center')
