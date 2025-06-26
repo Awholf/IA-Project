@@ -222,7 +222,7 @@ class NewsTopicClassifier:
         print(f"📊 Documentos después del preprocesamiento: {len(df)}")
 
         X_train, X_test, y_train, y_test = train_test_split(
-            df['texto_procesado'], df['categoria'], test_size=0.25, random_state=42, stratify=df['categoria']
+            df['texto_procesado'], df['categoria'], test_size=0.30, random_state=42, stratify=df['categoria']
         )
 
         print(f"📊 Datos de entrenamiento: {len(X_train)} documentos")
@@ -231,7 +231,7 @@ class NewsTopicClassifier:
 
         self.pipeline = Pipeline([
             ('tfidf', TfidfVectorizer(
-                max_features=20000, ngram_range=(1, 1), min_df=1, max_df=1.0, stop_words='english', strip_accents='ascii'
+                max_features=20000, ngram_range=(1, 2), min_df=1, max_df=1.0, stop_words='english', strip_accents='ascii'
             )),
             ('nb', MultinomialNB(alpha=1.0))
         ])
